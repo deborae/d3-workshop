@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="shortcut icon" href="https://d3js.org/favicon.png" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,shrink-to-fit=no"
+    />
+    <meta name="description" content="D3 Introduction Workshop" />
+    <title>D3 Workshop</title>
+
+    <link rel="stylesheet" type="text/css" href="styles.css" />
+  </head>
+
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+
+    <div class="chart-container">
+      <h1>Basic Pie Charts</h1>
+
+      <div class="svg-static-chart">
+        <h2>Static Svg Pie Chart</h2>
+
+        <svg width="450" height="450">
+          <g transform="translate(225,225)">
+            <path
+              d="M126.85557209098644,134.65757991835642A185,185,0,0,1,-137.15312841424438,124.15320924642178L0,0Z"
+              fill="#0C7392"
+              stroke="black"
+              style="stroke-width: 1px; opacity: 0.9;"
+            ></path>
+            <path
+              d="M-109.9271903597664,-148.79856457509152A185,185,0,0,1,1.303290589681841e-13,-185L0,0Z"
+              fill="#65B276"
+              stroke="black"
+              style="stroke-width: 1px; opacity: 0.9;"
+            ></path>
+            <path
+              d="M-180.5926181675244,-40.14107949966895A185,185,0,0,1,-109.9271903597664,-148.79856457509152L0,0Z"
+              fill="#DCD01E"
+              stroke="black"
+              style="stroke-width: 1px; opacity: 0.9;"
+            ></path>
+            <path
+              d="M-137.15312841424438,124.15320924642178A185,185,0,0,1,-180.5926181675244,-40.14107949966895L0,0Z"
+              fill="#5A2951"
+              stroke="black"
+              style="stroke-width: 1px; opacity: 0.9;"
+            ></path>
+            <path
+              d="M1.1327982892113017e-14,-185A185,185,0,0,1,126.85557209098644,134.65757991835642L0,0Z"
+              fill="#B31C3A"
+              stroke="black"
+              style="stroke-width: 1px; opacity: 0.9;"
+            ></path>
+          </g>
+        </svg>
+      </div>
+
+      <div class="d3-chart">
+        <h2 class="d3-pie-chart-title">D3 Pie Chart</h2>
+        <h3 class="d3-pie-chart-example">Example h3</h3>
+        <h2 class="d3-pie-chart-example">Example h2</h2>
+      </div>
+
+      <div class="d3-chart">
+        <h2 class="d3-pie-chart-title">D3 Pie Chart</h2>
+        <h3 class="d3-pie-chart-example">Example h3</h3>
+        <h2 class="d3-pie-chart-example">Example h2</h2>
+      </div>
+    </div>
+  </body>
+
+  <script src="https://d3js.org/d3.v5.min.js"></script>
+
+  <script>
+    (async function() {
+      // set the dimensions and margins for the graph
+      const width = 450;
+      const height = 450;
+      const margin = 40;
+
+      // create the base svg
+      const svg = d3
+        .select(".d3-chart") // selects the first matching element with the css selector
+        //.selectAll(".d3-chart") // if selectAll was used instead, all matching elements would be returned (so, all divs with the .d3-chart class would have the svg chart rendered)
+        .append("svg") // appends a new element inside the selected element just before its end
+        //.insert("svg", "h2") // insert() can received as a second param (when not set, the element will be inserted at the end of the selected element) which element we want our new element to be inserted before. (in this case, "svg" will be inserted before all the h2 elements)
+        //.insert("svg", "h2.d3-pie-chart-example") (in this case, "svg" will be inserted before all the h2 elements with the ".d3-pie-chart-example" class)
+        //.insert("svg", ".d3-pie-chart-example") (in this case, "svg" will be inserted before all the elements with the ".d3-pie-chart-example" class)
+        .attr("width", width)
+        .attr("height", height)
+        .append("g")
+        .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+      // The radius of the pie is half the width or half the height (smallest one). The margin is then being subtracted
+      const radius = Math.min(width, height) / 2 - margin;
+
+      // D3 can handle different types of data defined either locally in variables or from external files
+      // mock data
+      const mockData = [
+        { language: "English", percentage: 20 },
+        { language: "German", percentage: 8 },
+        { language: "French", percentage: 9 },
+        { language: "Italian", percentage: 12 },
+        { language: "Turkish", percentage: 30 }
+      ];
+
+      // D3 provides different methods to load different types of data from external files. Follows the example of the d3.json() method loading data from an external api. This methods can also be used to load local files
+      /*let mockData = [];
+        await d3.json("https://api.myjson.com/bins/gw9c0").then(function(data) {
+          mockData = data;
+        }); 
+      */
+
+      // Compute the position of each group on the pie. d3.pie() generates a pie for the given array of data, returning an array of objects representing each datum’s arc angles.
+      const pie = d3.pie().value(function(d) {
+        return d.percentage;
+      });
+
+      const pieData = pie(mockData);
+
+      // Example with a simple array. Its not needed to call the value method
+      /* const mockData = [20, 8, 9, 12, 30];
+      const pieData = d3.pie()(mockData); */
+
+      // mock color scheme
+      const colorScheme = [
+        "#0C7392",
+        "#65B276",
+        "#DCD01E",
+        "#5A2951",
+        "#B31C3A"
+      ];
+
+      // set the color scale
+      const color = d3.scaleOrdinal(colorScheme);
+
+      // Put it all together, build the pie chart: In resume, each part of the pie is a path that we build using the arc function
+      svg
+        .selectAll("g")
+        .data(pieData)
+        .enter()
+        .append("path")
+        .attr(
+          "d",
+          d3
+            .arc()
+            .innerRadius(0)
+            .outerRadius(radius)
+        )
+        .attr("fill", function(d, i) {
+          return color(i);
+        })
+        .attr("stroke", "black")
+        .style("stroke-width", "1px")
+        .style("opacity", 0.9);
+    })();
+  </script>
+</html>
